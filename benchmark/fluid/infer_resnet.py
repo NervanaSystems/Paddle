@@ -123,7 +123,7 @@ def infer(args):
 
     fake_data = [(np.random.rand(dshape[0] * dshape[1] * dshape[2]).
                   astype(np.float32), np.random.randint(1, class_dim))
-                 for _ in range(200)]
+                 for _ in range(1)]
 
     image = fluid.layers.data(name='data', shape=dshape, dtype='float32')
     label = fluid.layers.data(name='label', shape=[1], dtype='int64')
@@ -158,6 +158,14 @@ def infer(args):
                 batch_size=args.batch_size)
 
     infer_accuracy = fluid.metrics.Accuracy()
+
+    if args.use_fake_data:
+        data = infer_reader().next()
+        image = np.array(map(lambda x: x[0].reshape(dshape), data)).astype(
+            'float32')
+        label = np.array(map(lambda x: x[1], data)).astype('int64')
+        label = label.reshape([-1, 1])
+
     iters = 0
     batch_times = []
     fpses = []
